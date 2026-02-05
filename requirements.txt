@@ -11,11 +11,12 @@ openai               สำหรับเชื่อมต่อ DeepSeek-Code
 
  --- 3. Sandbox & Security ---
 docker               Docker SDK สำหรับ Python เพื่อจัดการ Sandbox [cite: 13, 43]
-
 #pip install docker
 
  --- 4. Persistence & Knowledge Layer ---
 chromadb             Vector Database สำหรับเก็บประสบการณ์การแก้บั๊ก [cite: 18, 46]
+#pip install chromadb
+
 psycopg2-binary      สำหรับเชื่อมต่อกับ PostgreSQL เก็บสถิติ [cite: 21, 47]
 
  --- 5. Utilities ---
