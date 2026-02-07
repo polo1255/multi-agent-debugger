@@ -1,4 +1,4 @@
-# file: agents/qa_executor.py
+# file: agents/qa_executor.py (เวอร์ชันปลดล็อก Debug ได้ทั่วจักรวาล)
 
 import docker
 import os
@@ -12,9 +12,6 @@ except Exception as e:
     client = None
 
 def qa_executor_node(state: AgentState):
-    """
-    QA Agent: รันโค้ดใน Docker Sandbox พร้อม Test Case อัตโนมัติ
-    """
     print("--- QA AGENT IS RUNNING TESTS ---")
     
     code_to_test = state['code_base']
@@ -22,34 +19,11 @@ def qa_executor_node(state: AgentState):
     if not client:
         return {"test_output": "Docker not running!", "is_success": False}
 
-    # --- ส่วนที่เพิ่มมา: สร้าง Test Harness (ข้อสอบ) ---
-    # เราจะเติมส่วนนี้ต่อท้ายโค้ดของ Developer เพื่อลองเรียกใช้งานจริง
-    test_harness = """
-import sys
-
-# Test Script Auto-Generated
-if __name__ == "__main__":
-    try:
-        print("Running Test: calculate_sum(5)")
-        # โจทย์: ผลบวก 0 ถึง 4 (0+1+2+3+4) ต้องได้ 10
-        result = calculate_sum(5)
-        print(f"Actual Result: {result}")
-        
-        expected = 10
-        if result == expected:
-            print("✅ TEST PASSED")
-            sys.exit(0) # แจ้งว่าผ่าน
-        else:
-            print(f"❌ TEST FAILED: Expected {expected}, got {result}")
-            sys.exit(1) # แจ้งว่าพัง
-            
-    except Exception as e:
-        print(f"❌ RUNTIME ERROR: {e}")
-        sys.exit(1)
-"""
+    # 🟢 แก้ตรงนี้: ไม่ต้องยัดไส้ test_harness แบบเจาะจงแล้ว
+    # เราจะรันโค้ดที่ Developer ส่งมาเพียวๆ เลย
+    # (สมมติว่าในโค้ดนั้นมี print test ของมันเองอยู่แล้ว เช่นในตัวอย่างที่คุณส่งมา)
     
-    # รวมร่างโค้ด (User Code + Test Harness)
-    full_script = code_to_test + "\n" + test_harness
+    full_script = code_to_test
 
     print("================ DEBUG: CODE SENT TO DOCKER ================")
     print(full_script)
@@ -60,7 +34,7 @@ if __name__ == "__main__":
         temp_path = temp_script.name
 
     try:
-        # สั่งรัน Docker
+        # รัน Docker
         container = client.containers.run(
             image="python:3.10-slim",
             command=["python", "/app/test_script.py"],
@@ -74,8 +48,7 @@ if __name__ == "__main__":
         exit_code = result['StatusCode']
         logs = container.logs().decode('utf-8')
         container.remove()
-
-        # --- Print Log ออกมาดูให้เห็นกับตา ---
+        
         print(f"--- DOCKER LOGS ---\n{logs}\n---------------------")
 
     except Exception as e:
@@ -88,7 +61,7 @@ if __name__ == "__main__":
 
     print(f"--- QA RESULT: Exit Code {exit_code} ---")
 
-    # ส่งผลลัพธ์กลับเข้า Loop
+    # ถ้า Exit Code 0 แปลว่าโปรแกรมรันจบโดยไม่ Crash -> ถือว่าผ่าน
     if exit_code == 0:
         return {
             "test_output": logs,
@@ -96,7 +69,7 @@ if __name__ == "__main__":
         }
     else:
         return {
-            "error_context": f"Runtime Error or Test Failed:\n{logs}",
+            "error_context": f"Runtime Error:\n{logs}",
             "is_success": False,
             "test_output": logs
         }

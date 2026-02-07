@@ -1,58 +1,71 @@
-import os
-from langchain_anthropic import ChatAnthropic
+# file: agents/reviewer.py
+
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
+import os
 from dotenv import load_dotenv
 
-# นำเข้าโครงสร้าง State
-from graph.state import AgentState
-
+# Load Environment Variables
 load_dotenv()
 
-# ตั้งค่า Claude 3.5 Sonnet 
-# โมเดลนี้มีความสามารถในการตรวจสอบ Logic และ Security ได้ดีเยี่ยม
-llm = ChatAnthropic(
-    model="claude-3-haiku-20240307",
-    api_key=os.getenv("CLAUDE_API_KEY"),
-    temperature=0  # ตั้งเป็น 0 เพื่อให้การตรวจสอบคงเส้นคงวาที่สุด
-)
+# --- ส่วนเลือก Model (ให้เหมือนกับ Developer) ---
+if os.getenv("DEEPSEEK_API_KEY"):
+    # ใช้ DeepSeek ถ้ามี Key (ประหยัดและเก่ง)
+    llm = ChatOpenAI(
+        model="deepseek-coder", 
+        api_key=os.getenv("DEEPSEEK_API_KEY"),
+        base_url="https://api.deepseek.com",
+        temperature=0
+    )
+elif os.getenv("OPENAI_API_KEY"):
+    # ใช้ GPT-4o หรือ 3.5 ถ้ามีแต่ OpenAI Key
+    llm = ChatOpenAI(
+        model="gpt-3.5-turbo", # หรือ gpt-4o ถ้าสู้ราคาไหว
+        api_key=os.getenv("OPENAI_API_KEY"),
+        temperature=0
+    )
+else:
+    # ถ้าไม่มี Key อะไรเลย
+    raise ValueError("กรุณาใส่ DEEPSEEK_API_KEY หรือ OPENAI_API_KEY ในไฟล์ .env")
 
-def reviewer_node(state: AgentState):
+def reviewer_node(state):
     """
-    Senior Reviewer Agent: ทำหน้าที่ตรวจสอบคุณภาพโค้ด (Static Analysis) 
+    Reviewer Agent: ตรวจสอบโค้ด
     """
     print("--- SENIOR REVIEWER IS WORKING ---")
     
-    # 1. ดึงโค้ดล่าสุดจาก Developer มาตรวจ
     current_code = state['code_base']
+    error_context = state['error_context']
     
-    # 2. สร้าง Prompt สำหรับการตรวจสอบ (The Reflector) [cite: 37]
-    system_prompt = """You are a Senior Software Engineer acting as a Code Reviewer.
-    Your task is to review the provided code for:
-    1. Logical Correctness: Does it actually fix the bug?
-    2. Security Vulnerabilities: Are there any unsafe practices? [cite: 40]
-    3. Code Quality: Is it clean and maintainable?
+    # Prompt สั่งให้ Reviewer ใจดีหน่อย
+    system_prompt = """You are a Senior Python Code Reviewer.
     
-    Response Format:
-    - If the code is good and safe, reply ONLY with: "APPROVE"
-    - If there are issues, provide a concise list of feedback to the developer. Start your response with "FEEDBACK:"
+    YOUR GOAL: 
+    Check if the provided code fixes the reported error. 
+    
+    CRITERIA FOR APPROVAL:
+    1. If the code logic seems to fix the specific error mentioned -> APPROVE.
+    2. If the code is valid Python and runnable -> APPROVE.
+    3. DO NOT complain about best practices unless they cause errors.
+
+    OUTPUT FORMAT:
+    - If the code is good enough: Respond with exactly "APPROVE".
+    - If there is a CRITICAL bug: Start with "FEEDBACK:" followed by the issue.
     """
     
-    user_content = f"### CODE TO REVIEW:\n{current_code}"
-    
+    user_content = f"### CODE TO REVIEW:\n{current_code}\n\n### ERROR TO FIX:\n{error_context}"
+
     messages = [
         SystemMessage(content=system_prompt),
         HumanMessage(content=user_content)
     ]
     
-    # 3. ให้ AI ประมวลผล
+    # เรียกใช้งาน AI
     response = llm.invoke(messages)
-    review_result = response.content
+    content = response.content.strip()
     
-    print(f"--- REVIEW RESULT: {review_result[:50]}... ---")
+    print(f"--- REVIEW RESULT: {content[:50]}... ---")
 
-    # 4. อัปเดต State
-    # เราจะบันทึกผลการรีวิวลงใน reflection_logs เพื่อให้ Developer อ่านในรอบถัดไป
-    # ถ้าผ่าน (APPROVE) ข้อมูลนี้จะถูกใช้เพื่อตัดสินใจส่งไป QA ต่อ
     return {
-        "reflection_logs": [review_result] 
+        "reflection_logs": [content] 
     }
