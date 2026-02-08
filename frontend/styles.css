@@ -1,0 +1,351 @@
+/* Color Variables */
+:root {
+    --bg-app: #000000;
+    --bg-panel: #0d0d0d;
+    --bg-editor: #111111;
+    --border: #333333;
+    --accent: #00ff9d; /* สีเขียว Neon */
+    --accent-dim: rgba(0, 255, 157, 0.1);
+    --text-main: #eeeeee;
+    --text-dim: #888888;
+    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* --- Top Navigation --- */
+.top-nav {
+    height: 60px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: #050505;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tag {
+    background: var(--accent);
+    color: black;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+}
+
+.stepper {
+    display: flex;
+    gap: 40px;
+}
+
+.step {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.5;
+    transition: all 0.3s;
+}
+
+.step.active {
+    color: var(--accent);
+    opacity: 1;
+}
+
+.step-num {
+    border: 1px solid currentColor;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+/* --- Workspace Layout --- */
+.workspace {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Sidebar Left & Right */
+.sidebar-left, .sidebar-right {
+    width: 550px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 15px;
+}
+
+.sidebar-right {
+    width: 400px; /* เพิ่มความกว้าง */
+    background-color: #0d0d0d;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+/* กรอบหน้าต่าง Terminal */
+.terminal-window {
+    background-color: #1e1e1e; /* สีพื้นหลังแบบ VS Code */
+    border: 1px solid #333;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* ยืดเต็มพื้นที่ */
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    margin-top: 10px;
+}
+
+/* ส่วนหัวของ Terminal (ที่มีปุ่มแดงเหลืองเขียว) */
+.terminal-header {
+    background-color: #252526;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+.traffic-lights {
+    display: flex;
+    gap: 6px;
+    margin-right: 15px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+.dot.red { background-color: #ff5f56; }
+.dot.yellow { background-color: #ffbd2e; }
+.dot.green { background-color: #27c93f; }
+
+.terminal-title {
+    font-size: 11px;
+    color: #999;
+    font-family: var(--font-mono);
+}
+
+/* ส่วนเนื้อหาข้างใน Terminal */
+.terminal-body {
+    padding: 15px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #cccccc;
+    flex: 1;
+    overflow-y: auto;
+    white-space: pre-wrap; /* ให้ขึ้นบรรทัดใหม่ตามจริง */
+}
+
+/* แต่งสี Output ให้ดูโปร */
+.prompt {
+    color: #6a9955; /* สีเขียว Prompt */
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+/* Custom Scrollbar สำหรับ Terminal */
+.terminal-body::-webkit-scrollbar { width: 8px; }
+.terminal-body::-webkit-scrollbar-track { background: #1e1e1e; }
+.terminal-body::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+.panel-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.panel-section.grow { flex: 1; }
+
+.section-header {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.editor-container textarea {
+    width: 100%;
+    background: var(--bg-editor);
+    border: 1px solid var(--border);
+    color: #ddd;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 15px;
+    border-radius: 6px;
+    resize: none;
+    outline: none;
+}
+
+.editor-container textarea:focus { border-color: var(--accent); }
+
+#code-input { height: 250px; }
+#error-input { height: 100px; color: #ff6b6b; }
+
+#fix-btn {
+    background: var(--accent);
+    color: black;
+    border: none;
+    padding: 12px;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#fix-btn:hover { filter: brightness(1.1); }
+#fix-btn:disabled { background: #333; color: #555; cursor: wait; }
+
+/* --- Main Stage (Center) --- */
+.main-stage {
+    flex: 1;
+    background: #000;
+    position: relative;
+    overflow-y: auto;
+}
+
+.empty-state {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+.empty-icon { font-size: 40px; margin-bottom: 20px; font-family: var(--font-mono); }
+
+.result-container {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.code-viewer {
+    flex: 1;
+    background: #080808;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 20px;
+    overflow: auto;
+}
+
+pre { margin: 0; font-family: var(--font-mono); font-size: 13px; color: #a5d6ff; }
+
+/* --- Right Sidebar Components --- */
+.context-card {
+    background: #151515;
+    border: 1px solid #222;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.context-card h4 { margin: 0 0 5px 0; font-size: 12px; color: #fff; }
+.status-line { font-size: 11px; color: var(--text-dim); }
+
+.terminal-output {
+    background: #000;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #00ff9d;
+    flex: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.badge {
+    background: #222;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+.badge.success { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+
+/* ใส่ท้ายไฟล์ styles.css */
+.blink {
+    animation: blinker 1s linear infinite;
+    color: #00ff9d;
+    font-weight: bold;
+}
+
+/* --- Analysis Summary Card --- */
+.summary-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-left: 4px solid var(--accent); /* แถบสีเขียวข้างซ้าย */
+    border-radius: 6px;
+    margin-bottom: 20px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.summary-header {
+    background: #252526;
+    padding: 10px 15px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-content {
+    padding: 15px;
+    font-size: 13px;
+    color: #e0e0e0;
+    line-height: 1.6;
+    font-family: 'Inter', sans-serif; /* ใช้อักษรอ่านง่าย ไม่ใช่ Monospace */
+}
+
+.code-viewer-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+@keyframes blinker {
+    50% { opacity: 0; }
+}

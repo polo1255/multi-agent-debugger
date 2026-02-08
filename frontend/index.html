@@ -1,42 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Auto-Debugger Agent</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f0f2f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        textarea { width: 100%; height: 150px; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #ccc; }
-        #result-area { margin-top: 20px; display: none; }
-        .success { color: green; font-weight: bold; }
-        .error { color: red; font-weight: bold; }
-        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; }
-        .loading { display: none; color: #666; font-style: italic; margin-top: 10px; }
-    </style>
+    <title>AI Auto-Debugger Pro</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h2>🐞 AI Auto-Debugger Agent</h2>
-        
-        <label><b>Broken Code:</b></label>
-        <textarea id="code-input" placeholder="Paste your python code here..."></textarea>
-        
-        <label><b>Error Message:</b></label>
-        <textarea id="error-input" placeholder="Paste the error message here..." style="height: 80px;"></textarea>
-        
-        <button id="fix-btn" onclick="fixCode()">✨ Fix Bug with AI</button>
-        <div id="loading" class="loading">🤖 AI Agents are working... (This may take 30-60 seconds)</div>
 
-        <div id="result-area">
-            <h3>Result: <span id="status-text"></span></h3>
-            <p><b>Fixed Code:</b></p>
-            <pre id="fixed-code"></pre>
-            <p><b>Test Output:</b></p>
-            <pre id="test-output" style="background: #eee; color: #333;"></pre>
+    <nav class="top-nav">
+        <div class="logo">
+            <span class="logo-icon">🐞</span> 
+            AI DEBUGGER <span class="tag">PRO</span>
         </div>
+        <div class="stepper">
+            <div class="step active" id="step-1"><span class="step-num">1</span> Ingestion</div>
+            <div class="step" id="step-2"><span class="step-num">2</span> Drafting</div>
+            <div class="step" id="step-3"><span class="step-num">3</span> Verification</div>
+        </div>
+        <div class="actions">
+            <button class="icon-btn">⚙️</button>
+        </div>
+    </nav>
+
+    <div class="workspace">
+        
+        <aside class="sidebar-left">
+            <div class="panel-section">
+                <div class="section-header">
+                    <span class="icon">📝</span> SOURCE CODE
+                </div>
+                <div class="editor-container">
+                    <textarea id="code-input" placeholder="// Paste your buggy code here..." spellcheck="false"></textarea>
+                </div>
+            </div>
+
+            <div class="panel-section error-section">
+                <div class="section-header">
+                    <span class="icon">⚠️</span> ERROR LOG
+                </div>
+                <div class="editor-container">
+                    <textarea id="error-input" placeholder="Paste error message..." spellcheck="false"></textarea>
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <button id="fix-btn" onclick="fixCode()">
+                    <span class="btn-text">▶ START DEBUG</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-stage">
+            <div id="empty-state" class="empty-state">
+                <div class="empty-icon">{ }</div>
+                <h2>Ready to Debug</h2>
+                <p>Paste your code on the left to start the AI analysis.</p>
+            </div>
+
+            <div id="result-area" class="result-container" style="display: none;">
+                <div class="result-header">
+                    <h3>DIAGNOSIS REPORT</h3>
+                    <div id="status-badge" class="badge">Analyzing...</div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-header">
+                        <span class="icon">💡</span> INSIGHTS & FIXES
+                    </div>
+                    <div id="summary-text" class="summary-content">
+                        Waiting for analysis...
+                    </div>
+                </div>
+
+                <div class="code-viewer-label">PATCHED CODE</div>
+                <div class="code-viewer">
+                    <pre><code id="fixed-code" class="language-python"># Waiting for AI...</code></pre>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar-right">
+            <div class="panel-section grow">
+                <div class="section-header">
+                    <span class="icon">💻</span> EXECUTION CONSOLE
+                </div>
+                
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <div class="traffic-lights">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="terminal-title">docker-sandbox — python</span>
+                    </div>
+                    <div class="terminal-body" id="test-output">
+                        <span class="prompt">$</span> Waiting for debugging process...
+                    </div>
+                </div>
+            </div>
+        </aside>
+
     </div>
 
     <script src="renderer.js"></script>
