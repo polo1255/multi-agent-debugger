@@ -1,23 +1,24 @@
- --- 1. Orchestration & State Management ---
-langgraph            จัดการ Cyclic Graph และ Workflow [cite: 6, 27]
-langchain            Framework หลักสำหรับเชื่อมต่อ LLMs [cite: 125]
+# --- 1. Orchestration & State Management ---
+langgraph           # สำหรับจัดการ Cyclic Graph และสถานะของ Agent 
+langchain           # Framework หลักในการเชื่อมต่อส่วนประกอบต่างๆ 
+langchain-core      # ส่วนประกอบพื้นฐานของ LangChain
 
-#pip install langgraph langchain-openai langchain-anthropic
+# --- 2. LLMs (The Brain) ---
+langchain-openai    # สำหรับเชื่อมต่อ GPT-4o และ DeepSeek (OpenAI Compatible) 
+openai              # Client สำหรับเรียกใช้ API โดยตรง 
 
- --- 2. LLMs (The Brain) ---
-langchain-anthropic  สำหรับเชื่อมต่อ Claude 3.5 Sonnet [cite: 10, 38]
-langchain-openai     สำหรับเชื่อมต่อ GPT-4o [cite: 10, 38]
-openai               สำหรับเชื่อมต่อ DeepSeek-Coder-V2 (ผ่าน OpenAI-compatible API) [cite: 11, 35]
+# --- 3. Sandbox & Execution ---
+docker              # Docker SDK สำหรับสั่งรันรหัสในตู้คอนเทนเนอร์ 
 
- --- 3. Sandbox & Security ---
-docker               Docker SDK สำหรับ Python เพื่อจัดการ Sandbox [cite: 13, 43]
-#pip install docker
+# --- 4. Persistence & Knowledge Layer ---
+chromadb            # Vector Database สำหรับเก็บและค้นหาประสบการณ์แก้บั๊ก 
+psycopg2-binary     # สำหรับเชื่อมต่อ PostgreSQL เพื่อเก็บสถิติการใช้งาน 
 
- --- 4. Persistence & Knowledge Layer ---
-chromadb             Vector Database สำหรับเก็บประสบการณ์การแก้บั๊ก [cite: 18, 46]
-#pip install chromadb
+# --- 5. Web API & Server ---
+fastapi             # สำหรับสร้าง REST API ให้หน้าบ้านเรียกใช้
+uvicorn             # ASGI Server สำหรับรัน FastAPI
+pydantic            # สำหรับจัดการ Schema ของข้อมูล (DebugRequest, etc.)
 
-psycopg2-binary      สำหรับเชื่อมต่อกับ PostgreSQL เก็บสถิติ [cite: 21, 47]
-
- --- 5. Utilities ---
-python-dotenv       สำหรับโหลดค่า API Key จากไฟล์ .env
+# --- 6. Utilities ---
+python-dotenv       # สำหรับโหลดค่า API Key จากไฟล์ .env 
+requests            # สำหรับเรียกใช้ HTTP Request ภายใน Agent

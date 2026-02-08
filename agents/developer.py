@@ -29,11 +29,11 @@ else:
 
 def extract_code_content(text):
     """
-    ฟังก์ชันสำหรับดึงเฉพาะโค้ด Python ออกจาก Markdown Quote
-    เช่น ตัดคำว่า 'Here is the code:' ทิ้งไป
+    Upgraded function version: Extract code in any language.
+    Whether it's JavaScript, Python, or Java.
     """
     # 1. ค้นหา Pattern ```python ... ```
-    pattern = r"```(?:python)?\s*(.*?)```"
+    pattern = r"```(?:\w+)?\s*\n?(.*?)```"
     match = re.search(pattern, text, re.DOTALL)
     
     if match:
@@ -45,6 +45,7 @@ def extract_code_content(text):
     lines = text.strip().split('\n')
     clean_lines = []
     started = False
+    code_starters = ('def ', 'class ', 'import ', 'from ', '@', 'function ', 'const ', 'let ', 'var ', 'package ')
     for line in lines:
         # เริ่มเก็บเมื่อเจอ def, class, import หรือ from
         if line.strip().startswith(('def ', 'class ', 'import ', 'from ', '@')):
@@ -60,7 +61,7 @@ def extract_code_content(text):
 
 def developer_node(state: AgentState):
     """
-    Developer Agent: ทำหน้าที่วิเคราะห์ Error และแก้ไขโค้ด
+    Developer Agent: ทำหน้าที่วิเคราะห์ Error และแก้ไขโค้ด โดยใช้ความรู้จากอดีต (RAG)
     """
     print("--- DEVELOPER AGENT IS WORKING ---")
     
@@ -68,19 +69,24 @@ def developer_node(state: AgentState):
     error = state['error_context']
     feedback = state.get('reflection_logs', [])
     
-    # Prompt สั่งให้ทำงาน และย้ำว่าขอ Code เท่านั้น
-    system_prompt = """You are an expert Python software developer.
-    Your task is to fix bugs in the provided code based on the error context.
+    # 🔥 ดึงข้อมูล Knowledge Context ที่ส่งมาจาก Server
+    knowledge = state.get('knowledge_context', "")
     
-    RULES:
-    1. Analyze the logic and error.
-    2. Fix the code.
-    3. Return ONLY the complete fixed Python code inside markdown code blocks.
-    4. DO NOT change the function name or signature unless necessary.
-    5. Ensure the logic matches: Sum of integers from 0 to n-1.
+    # 1. ปรับปรุง System Prompt ให้ AI รู้จักใช้ Reference
+    system_prompt = """You are a Universal Software Engineer expert in all programming languages.
+    Your task is to:
+        1. Identify the programming language from the provided code.
+        2. Analyze and fix the bugs using best practices for THAT specific language.
+        3. Keep the original structure and logic.
+        4. Return ONLY the fixed code in markdown code blocks.
     """
     
+    # 2. ปรับปรุง User Content เพื่อใส่ความรู้จาก ChromaDB เข้าไป
     user_content = f"### BROKEN CODE:\n{current_code}\n\n### ERROR CONTEXT:\n{error}"
+    
+    # 🔥 ถ้ามีข้อมูลความรู้เก่า ให้ฉีดเข้าไปใน Prompt ตรงนี้
+    if knowledge:
+        user_content += f"\n\n### PAST KNOWLEDGE (Use as reference):\n{knowledge}"
     
     if feedback:
         user_content += f"\n\n### FEEDBACK FROM REVIEWER:\n{feedback[-1]}"
@@ -93,7 +99,6 @@ def developer_node(state: AgentState):
     response = llm.invoke(messages)
     raw_content = response.content
     
-    # --- จุดสำคัญ: เรียกใช้ฟังก์ชันแกะโค้ด ---
     fixed_code = extract_code_content(raw_content)
             
     print("--- DEVELOPER AGENT FINISHED ---")

@@ -207,8 +207,8 @@ body {
 
 .editor-container textarea:focus { border-color: var(--accent); }
 
-#code-input { height: 250px; }
-#error-input { height: 100px; color: #ff6b6b; }
+#code-input { height: 250px; color: #ff6b6b;}
+#error-input { height: 100px;  }
 
 #fix-btn {
     background: var(--accent);

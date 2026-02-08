@@ -55,9 +55,19 @@ def debug_code(request: DebugRequest):
     print("🧠 Searching Vector Store...")
     similar_cases = search_similar_bugs(request.error, request.code)
     
+    # แปลง list ของ knowledge ให้กลายเป็นข้อความยาวๆ เพื่อยัดใส่ Prompt
+    knowledge_str = ""
+    if similar_cases:
+        knowledge_str = "\n".join([
+            f"--- Reference Case ---\n{c['summary']}" 
+            for c in similar_cases
+        ])
+
+    # 2. 🔥 ส่ง knowledge_str เข้าไปใน initial_state
     initial_state = {
         "code_base": request.code,
         "error_context": request.error,
+        "knowledge_context": knowledge_str,  # <--- เพิ่มตัวนี้เข้าไป!
         "reflection_logs": [],
         "iteration_count": 0,
         "is_success": False,

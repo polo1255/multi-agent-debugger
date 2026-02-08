@@ -64,16 +64,34 @@ def search_similar_bugs(error_msg, code_snippet, limit=3):
         return []
 
 def save_bug_report(error_msg, code, fixed_code, summary):
-    """บันทึกข้อมูลลงฐานข้อมูล"""
+    """บันทึกข้อมูลลงฐานข้อมูล โดยเช็คก่อนว่ามีข้อมูลที่ซ้ำกันเกิน 95% หรือไม่"""
     import uuid
     import datetime
     
+    # 1. เตรียมเนื้อหาที่จะบันทึก (Content to be saved)
+    doc_content = f"Summary: {summary}\nOriginal Code: {code}\nFixed Code: {fixed_code}"
     # สกัดชื่อ Error เช่น "IndexError"
     title = error_msg.split(":")[0] if ":" in error_msg else "Runtime Error"
-    
-    doc_content = f"Summary: {summary}\nOriginal Code: {code}\nFixed Code: {fixed_code}"
-    
+
     try:
+        # 2. 🔥 ตรวจสอบข้อมูลซ้ำ (Deduplication Check)
+        # ค้นหาข้อมูลที่ใกล้เคียงที่สุดเพียง 1 รายการ
+        check_exist = collection.query(
+            query_texts=[doc_content],
+            n_results=1
+        )
+
+        # ตรวจสอบว่ามีผลลัพธ์ย้อนกลับมาหรือไม่
+        if check_exist['distances'] and len(check_exist['distances'][0]) > 0:
+            distance = check_exist['distances'][0][0]
+            
+            # ใน ChromaDB: Distance ยิ่งน้อย ยิ่งเหมือน (0.0 คือเหมือนเป๊ะ)
+            # ค่า 0.1 มักจะหมายถึงความเหมือนที่สูงกว่า 95%
+            if distance < 0.1: 
+                print(f"⚠️ Skip saving: Similar knowledge already exists (Distance: {distance:.4f})")
+                return False # จบการทำงานทันที ไม่บันทึกซ้ำ
+
+        # 3. หากไม่ซ้ำ ให้ทำการบันทึกข้อมูลลงฐานข้อมูล
         collection.add(
             documents=[doc_content],
             metadatas=[{
@@ -84,5 +102,8 @@ def save_bug_report(error_msg, code, fixed_code, summary):
             ids=[str(uuid.uuid4())]
         )
         print(f"💾 Knowledge Saved: {title}")
+        return True
+
     except Exception as e:
         print(f"❌ Save Knowledge Error: {e}")
+        return False
