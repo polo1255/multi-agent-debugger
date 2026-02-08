@@ -8,6 +8,7 @@ from langchain_core.messages import HumanMessage
 import uuid
 import os
 from dotenv import load_dotenv
+from database.vector_store import search_similar_bugs, save_bug_report
 
 # โหลดตัวแปรจากไฟล์ .env
 load_dotenv()
@@ -49,6 +50,10 @@ def read_root():
 @api.post("/debug")
 def debug_code(request: DebugRequest):
     print(f"--- RECEIVING REQUEST ---")
+
+    # 1. 🔍 ค้นหาความรู้เก่า (คุณมีบรรทัดนี้แล้ว ดีมากครับ)
+    print("🧠 Searching Vector Store...")
+    similar_cases = search_similar_bugs(request.error, request.code)
     
     initial_state = {
         "code_base": request.code,
@@ -63,13 +68,13 @@ def debug_code(request: DebugRequest):
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 20}
     
     try:
-        # 1. รันระบบแก้บั๊ก (Core System)
+        # รันระบบแก้บั๊ก
         result = app.invoke(initial_state, config=config)
         
         fixed_code = result['code_base']
         is_success = result['is_success']
         
-        # 2. สร้างบทสรุป (ถ้ามี AI Summarizer)
+        # สร้างบทสรุป
         summary_text = "Analysis complete."
         
         if summarizer_llm:
@@ -85,24 +90,31 @@ def debug_code(request: DebugRequest):
                 - <b>Bug:</b> [Explain what caused the error in 1 sentence]
                 - <b>Fix:</b> [Explain how you fixed it in 1 sentence]
                 """
-                
-                # เรียก AI
                 ai_msg = summarizer_llm.invoke([HumanMessage(content=summary_prompt)])
                 summary_text = ai_msg.content
-                
             except Exception as e:
                 print(f"Summarization failed: {e}")
                 summary_text = "Analysis complete (Summary unavailable)."
         else:
              summary_text = "Analysis complete (No AI configured for summary)."
 
-        # 3. ส่งผลลัพธ์กลับ
+        # ---------------------------------------------------------
+        # 🔥 จุดที่ 1: เติมส่วนบันทึกความรู้ (ถ้าแก้สำเร็จ ให้จำไว้)
+        # ---------------------------------------------------------
+        if is_success:
+            print("💾 Saving new knowledge to Vector Store...")
+            save_bug_report(request.error, request.code, fixed_code, summary_text)
+
+        # ---------------------------------------------------------
+        # 🔥 จุดที่ 2: ส่ง knowledge กลับไปให้ Frontend โชว์
+        # ---------------------------------------------------------
         return {
             "status": "success" if is_success else "failed",
             "fixed_code": fixed_code,
             "test_output": result['test_output'],
             "summary": summary_text,
-            "logs": result.get('reflection_logs', [])
+            "logs": result.get('reflection_logs', []),
+            "knowledge": similar_cases  # <--- อย่าลืมบรรทัดนี้!
         }
             
     except Exception as e:

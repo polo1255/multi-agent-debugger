@@ -346,6 +346,79 @@ pre { margin: 0; font-family: var(--font-mono); font-size: 13px; color: #a5d6ff;
     font-weight: 600;
 }
 
+/* --- Knowledge Context Styles --- */
+.provider-tag {
+    float: right;
+    font-size: 9px;
+    background: #333;
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: #888;
+}
+
+.knowledge-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.empty-knowledge {
+    color: #555;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 20px;
+    font-style: italic;
+}
+
+/* ตัวการ์ดความรู้ */
+.knowledge-card {
+    background: #18181b;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    transition: transform 0.2s;
+}
+
+.knowledge-card:hover {
+    border-color: #555;
+    transform: translateY(-2px);
+}
+
+.k-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.k-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #e0e0e0;
+}
+
+.k-score {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #00ff9d;
+    font-weight: bold;
+    border: 1px solid #00ff9d44;
+}
+
+.k-body {
+    font-size: 11px;
+    color: #a0a0a0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* ตัดคำถ้ายาวเกิน 2 บรรทัด */
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 @keyframes blinker {
     50% { opacity: 0; }
 }

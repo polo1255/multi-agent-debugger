@@ -12,9 +12,8 @@ async function fixCode() {
     const fixedCodeEl = document.getElementById('fixed-code');
     const testOutputEl = document.getElementById('test-output');
     const statusBadge = document.getElementById('status-badge');
-    
-    // ❌ ลบตัวแปร loadingText ออก เพราะไม่มีใน HTML แล้ว
-    // const loadingText = document.getElementById('loading-text'); 
+    const summaryEl = document.getElementById('summary-text');
+    const knowledgeContainer = document.getElementById('knowledge-container');
 
     const code = codeInput.value;
     const error = errorInput.value;
@@ -28,16 +27,21 @@ async function fixCode() {
     btn.disabled = true;
     btn.innerHTML = '<span class="btn-text">⏳ PROCESSING...</span>';
     
-    // Update Stepper (ทำ Highlight)
     document.getElementById('step-1').classList.add('active');
     document.getElementById('step-2').classList.add('active');
     
-    // ✅ เปลี่ยนมาแสดงสถานะใน Terminal แทน
+    // แสดงสถานะใน Terminal
     testOutputEl.innerHTML = `
         <span style="color: #6a9955;">$ initializing_agents...</span><br>
+        <span style="color: #6a9955;">$ querying_knowledge_base...</span><br>
         <span style="color: #6a9955;">$ analyzing_code...</span><br>
         <span class="blink">_</span>
     `;
+    
+    // เคลียร์ Knowledge เก่า และโชว์สถานะรอ
+    if (knowledgeContainer) {
+        knowledgeContainer.innerHTML = `<div class="empty-knowledge">Scanning database...</div>`;
+    }
 
     try {
         const response = await fetch('http://127.0.0.1:8000/debug', {
@@ -50,25 +54,67 @@ async function fixCode() {
 
         // 3. แสดงผลลัพธ์
         emptyState.style.display = 'none';
-        resultArea.style.display = 'flex'; // แสดงกล่องผลลัพธ์
+        resultArea.style.display = 'flex'; 
         
-        // Update Stepper
         document.getElementById('step-3').classList.add('active');
 
+        // แสดง Fixed Code
         if (fixedCodeEl) fixedCodeEl.textContent = data.fixed_code;
         
-        const summaryEl = document.getElementById('summary-text');
+        // แสดง Summary
         if (summaryEl) {
-            summaryEl.innerHTML = data.summary || "✅ The AI successfully identified and fixed the bug. Please check the code below.";
+            summaryEl.innerHTML = data.summary || "✅ The AI successfully identified and fixed the bug.";
+        }
+        
+        // 🔥 ส่วนแสดง Knowledge Context (ใส่ตรงนี้ครับ)
+        if (knowledgeContainer) {
+            knowledgeContainer.innerHTML = ""; // เคลียร์ของเก่า
+
+            if (data.knowledge && data.knowledge.length > 0) {
+                data.knowledge.forEach(item => {
+                    let scoreColor = '#64748b'; // สีเทา (Low)
+                    let scoreText = 'Low Match';
+                    
+                    if (item.score >= 85) {
+                        scoreColor = '#4ade80'; // สีเขียว (High Confidence)
+                        scoreText = 'High Match';
+                    } else if (item.score >= 60) {
+                        scoreColor = '#facc15'; // สีเหลือง (Medium)
+                        scoreText = 'Medium Match';
+                    }
+
+                    // สร้างการ์ด HTML
+                    const card = document.createElement('div');
+                    card.className = 'knowledge-card';
+                    card.innerHTML = `
+                        <div class="k-header">
+                            <span class="k-title">📄 ${item.title}</span>
+                            <span class="k-score" style="color: ${scoreColor}; border-color: ${scoreColor};">
+                                ${item.score}% (${scoreText})
+                            </span>
+                        </div>
+                        <div class="k-body">
+                            ${item.summary}
+                        </div>
+                    `;
+                    knowledgeContainer.appendChild(card);
+                });
+            } else {
+                knowledgeContainer.innerHTML = `
+                    <div class="empty-knowledge">
+                        No similar bugs found in memory.<br>
+                        (I will learn from this one!)
+                    </div>
+                `;
+            }
         }
 
+        // แสดง Terminal Output
         if (testOutputEl) {
             const timestamp = new Date().toLocaleTimeString();
             const logPrefix = `[${timestamp}] root@debugger:~/app# run_test.py\n`;
-            
             const cleanOutput = data.test_output ? data.test_output.trim() : "No output returned.";
             
-            // แสดงผลลัพธ์แบบ Terminal สวยๆ
             testOutputEl.innerHTML = `
                 <span style="color: #569cd6;">${logPrefix}</span>
                 <span style="color: #444;">----------------------------------------</span>
@@ -78,6 +124,7 @@ async function fixCode() {
             `;
         }
 
+        // อัปเดตสถานะ Badge
         if (statusBadge) {
             if (data.status === 'success') {
                 statusBadge.textContent = "SUCCESS";
@@ -89,7 +136,6 @@ async function fixCode() {
         }
 
     } catch (err) {
-        // ถ้าพัง ให้โชว์ Error ใน Terminal สีแดง
         testOutputEl.innerHTML += `
             <br><br>
             <span style="color: #f44336;">❌ CRITICAL ERROR: Connection refused.</span><br>
