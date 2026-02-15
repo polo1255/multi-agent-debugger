@@ -1,0 +1,5 @@
+Summary: <b>Bug:</b> The variable `message` was used without being declared, causing a ReferenceError.
+<br><b>Fix:</b> The variable `message` was properly declared using the `let` keyword before it was assigned a value.
+Original Code: function greetUser(name) {
+    // BUG: ลืมประกาศตัวแปร 'message' ก่อนใช้งาน (ReferenceError)
+    message = "Hello, 
