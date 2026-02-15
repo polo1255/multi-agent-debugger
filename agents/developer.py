@@ -63,8 +63,10 @@ def developer_node(state: AgentState):
     """
     Developer Agent: ทำหน้าที่วิเคราะห์ Error และแก้ไขโค้ด โดยใช้ความรู้จากอดีต (RAG)
     """
-    print("--- DEVELOPER AGENT IS WORKING ---")
-    
+    current_iteration = state.get('iteration_count', 0) + 1
+
+    print(f"--- DEVELOPER AGENT IS WORKING (Round: {current_iteration}) ---")
+
     current_code = state['code_base']
     error = state['error_context']
     feedback = state.get('reflection_logs', [])
@@ -73,12 +75,15 @@ def developer_node(state: AgentState):
     knowledge = state.get('knowledge_context', "")
     
     # 1. ปรับปรุง System Prompt ให้ AI รู้จักใช้ Reference
-    system_prompt = """You are a Universal Software Engineer expert in all programming languages.
-    Your task is to:
-        1. Identify the programming language from the provided code.
-        2. Analyze and fix the bugs using best practices for THAT specific language.
-        3. Keep the original structure and logic.
-        4. Return ONLY the fixed code in markdown code blocks.
+    system_prompt = """You are a Universal Software Engineer expert.
+    Your task is to fix bugs while OPTIMIZING performance.
+    
+    GUIDELINES:
+        1. Identify the programming language.
+        2. Analyze the bug and the Time/Space Complexity of the original code.
+        3. Fix the bug using the MOST EFFICIENT algorithm (e.g., prefer O(n) over O(n^2)).
+        4. If using loops, ensure they are necessary. Use hash maps (dict) for lookups instead of lists where possible.
+        5. Return ONLY the fixed code in markdown code blocks.
     """
     
     # 2. ปรับปรุง User Content เพื่อใส่ความรู้จาก ChromaDB เข้าไป
@@ -105,5 +110,5 @@ def developer_node(state: AgentState):
 
     return {
         "code_base": fixed_code,
-        "iteration_count": state["iteration_count"] + 1
+        "iteration_count": current_iteration
     }

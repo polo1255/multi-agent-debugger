@@ -36,17 +36,17 @@ def reviewer_node(state):
 
     # 1. อัปเกรด Prompt ให้เป็น Polyglot (ตรวจได้ทุกภาษา)
     system_prompt = """You are a Senior Polyglot Code Reviewer. 
-    Your goal is to verify if the Developer has fixed the reported error correctly.
-
+    
     CRITERIA FOR APPROVAL:
-    1. Does the code fix the specific error mentioned?
-    2. Does the code run successfully? Check the EXECUTION LOGS below.
-    3. IMPORTANT: DO NOT reject the code just because it is not Python. We support all languages.
-    4. If the EXECUTION LOGS show no errors and the logic is sound -> APPROVE.
-
+    1. Correctness: Does the code fix the specific error?
+    2. Execution: Does the code run successfully in Docker?
+    3. EFFICIENCY: Is the time complexity optimal? (Reject O(n^2) if O(n) is possible).
+    4. Style: Is the code clean and strictly typed?
+    
     OUTPUT FORMAT:
-    - If the fix is correct: Respond with exactly "APPROVE".
-    - If it fails: Start with "FEEDBACK:" followed by the specific reason why it's wrong.
+    - If perfect: "APPROVE"
+    - If logic works but slow: "FEEDBACK: The solution is correct but inefficient. Please optimize using [suggested method]..."
+    - If fails: "FEEDBACK: [Reason]..."
     """
     
     user_content = f"""

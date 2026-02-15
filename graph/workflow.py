@@ -17,7 +17,7 @@ def decide_after_review(state: AgentState):
     iteration = state['iteration_count']
     
     # ป้องกัน Infinite Loop: ถ้ารวนเกิน 5 รอบ ให้หยุดทำงาน [cite: 31]
-    if iteration > 5:
+    if iteration >= 5:
         return "end"
 
     # ถ้า Reviewer บอกว่า "APPROVE" ให้ไปต่อที่ QA [cite: 66]
@@ -34,7 +34,7 @@ def decide_after_qa(state: AgentState):
     is_success = state.get('is_success', False)
     iteration = state['iteration_count']
 
-    if iteration > 5:
+    if iteration >= 5:
         return "end"
 
     # ถ้ารันผ่าน (Tests Pass) -> จบงาน [cite: 71]

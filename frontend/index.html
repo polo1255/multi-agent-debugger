@@ -71,6 +71,18 @@
                         Waiting for analysis...
                     </div>
                 </div>
+                
+                <div class="comparison-wrapper">
+                    <div class="comp-box error-box">
+                        <div class="comp-header">❌ ORIGINAL ERROR</div>
+                        <pre id="original-error-display">Waiting...</pre>
+                    </div>
+                    <div class="comp-arrow">➔</div>
+                    <div class="comp-box success-box">
+                        <div class="comp-header">✅ FIXED OUTPUT</div>
+                        <pre id="final-output-display">Waiting...</pre>
+                    </div>
+                </div>
 
                 <div class="code-viewer-label">PATCHED CODE</div>
                 <div class="code-viewer">
@@ -80,21 +92,31 @@
         </main>
 
         <aside class="sidebar-right">
-            
-            <div class="panel-section" style="height: 40%;">
+            <div class="panel-section knowledge-area">
                 <div class="section-header">
-                    <span class="icon">📚</span> KNOWLEDGE CONTEXT
+                    <div class="header-main">
+                        <span class="icon">📚</span> KNOWLEDGE CONTEXT
+                    </div>
                     <span class="provider-tag">ChromaDB</span>
                 </div>
+                
                 <div id="knowledge-container" class="knowledge-list">
                     <div class="empty-knowledge">
-                        Waiting for analysis...
+                        <div class="pulse-loader"></div>
+                        Waiting for experience matching...
                     </div>
                 </div>
             </div>
-            <div class="panel-section grow">
-                <div class="section-header">
-                    <span class="icon">💻</span> EXECUTION CONSOLE
+
+            <div class="panel-section console-area grow">
+                <div class="console-meta">
+                    <div class="iteration-badge" id="iteration-status">
+                        <span class="blink-dot"></span>
+                        ATTEMPT: <span id="loop-number">0</span> / 5
+                    </div>
+                    <div class="section-header">
+                        <span class="icon">💻</span> EXECUTION CONSOLE
+                    </div>
                 </div>
                 
                 <div class="terminal-window">
@@ -104,10 +126,13 @@
                             <span class="dot yellow"></span>
                             <span class="dot green"></span>
                         </div>
-                        <span class="terminal-title">docker-sandbox — python</span>
+                        <div class="terminal-title">docker-sandbox — polyglot-v1</div>
                     </div>
                     <div class="terminal-body" id="test-output">
-                        <span class="prompt">$</span> Ready.
+                        <div class="terminal-line">
+                            <span class="prompt">➜</span> <span class="path">~/sandbox</span> <span class="branch">git:(main)</span>
+                        </div>
+                        <div class="terminal-line status-ready">Ready for execution...</div>
                     </div>
                 </div>
             </div>

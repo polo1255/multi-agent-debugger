@@ -25,3 +25,5 @@ class AgentState(TypedDict):
     
     # เพิ่มเติม: ข้อมูลสำหรับรันใน Sandbox (ถ้าจำเป็น)
     test_output: str
+
+    iteration_count: int

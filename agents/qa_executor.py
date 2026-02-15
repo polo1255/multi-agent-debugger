@@ -1,29 +1,21 @@
-# file: agents/qa_executor.py (เวอร์ชัน Polyglot)
+# file: agents/qa_executor.py
 
 import docker
 import os
 import tempfile
-import re
 from graph.state import AgentState
-
-try:
-    client = docker.from_env()
-except Exception as e:
-    print(f"Docker Error: {e}")
-    client = None
 
 def detect_language(code):
     """วิเคราะห์ภาษาจากโครงสร้างโค้ดแบบง่าย (Heuristics)"""
     if "public class" in code and "static void main" in code:
         return "java"
     if "console.log" in code or "require(" in code or "import " in code:
-        # เช็คเพิ่มเติมว่าเป็น JS หรือเปล่า (มองข้าม Python import)
         if "const " in code or "let " in code: return "javascript"
     if "fmt.Print" in code or "package main" in code:
         return "go"
     if "#include <iostream>" in code or "using namespace std" in code:
         return "cpp"
-    return "python" # Default
+    return "python"
 
 def get_exec_config(language):
     """คืนค่า (Extension, Command) ตามประเภทภาษา"""
@@ -39,36 +31,43 @@ def get_exec_config(language):
 def qa_executor_node(state: AgentState):
     print("--- QA AGENT IS RUNNING POLYGLOT TESTS ---")
     
-    code_to_test = state['code_base']
-    if not client:
-        return {"test_output": "Docker not running!", "is_success": False}
+    # 🔥 FIX: ย้ายการเชื่อมต่อ Docker มาไว้ตรงนี้ (Try to connect every time)
+    try:
+        client = docker.from_env()
+        client.ping() # เช็คว่าคุยกันรู้เรื่องไหม
+    except Exception as e:
+        print(f"❌ Docker Connection Error: {e}")
+        return {
+            "test_output": "Docker not running! Please start Docker Desktop.",
+            "is_success": False
+        }
 
+    code_to_test = state['code_base']
+    
     # 1. วิเคราะห์ภาษาและดึงการตั้งค่า
     lang = detect_language(code_to_test)
     suffix, run_cmd = get_exec_config(lang)
     
-    # 2. จัดการเรื่องชื่อไฟล์ (กรณี Java ต้องใช้ Solution.java ตามคำสั่ง javac)
     filename = "Solution" + suffix if lang == "java" else "code" + suffix
-
     print(f"--- Detected Language: {lang.upper()} ---")
 
-    # 3. สร้างไฟล์ชั่วคราวตามนามสกุลภาษา
+    # 3. สร้างไฟล์ชั่วคราว
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False, mode='w', encoding='utf-8') as temp_script:
         temp_script.write(code_to_test)
         temp_path = temp_script.name
 
     try:
-        # 4. รัน Docker โดยใช้ Image 'polyglot-sandbox' ที่เรา Build ไว้
+        # 4. รัน Docker
         container = client.containers.run(
-            image="polyglot-sandbox", # 🔥 ต้อง Build ชื่อนี้ไว้ก่อน
+            image="polyglot-sandbox", 
             command=run_cmd,
             volumes={os.path.abspath(temp_path): {'bind': f'/app/{filename}', 'mode': 'ro'}},
             network_disabled=True, 
-            mem_limit="256m", # เพิ่ม RAM นิดหน่อยสำหรับ Java/C++
+            mem_limit="256m",
             detach=True
         )
 
-        result = container.wait(timeout=30) # ตั้ง Timeout ป้องกันค้าง
+        result = container.wait(timeout=30)
         exit_code = result['StatusCode']
         logs = container.logs().decode('utf-8')
         container.remove()

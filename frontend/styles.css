@@ -1,14 +1,16 @@
 /* Color Variables */
 :root {
-    --bg-app: #000000;
-    --bg-panel: #0d0d0d;
-    --bg-editor: #111111;
-    --border: #333333;
-    --accent: #00ff9d; /* สีเขียว Neon */
-    --accent-dim: rgba(0, 255, 157, 0.1);
-    --text-main: #eeeeee;
-    --text-dim: #888888;
-    --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    --bg-app: #050505;
+    --bg-panel: #0f0f0f;
+    --bg-editor: #121212;
+    --border: #222222;
+    --accent: #00ff9d; 
+    --accent-glow: rgba(0, 255, 157, 0.3);
+    --accent-dim: rgba(0, 255, 157, 0.05);
+    --error: #ff5555;
+    --text-main: #e0e0e0;
+    --text-dim: #666666;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
 * { box-sizing: border-box; }
@@ -16,6 +18,7 @@
 body {
     margin: 0;
     padding: 0;
+    background-image: radial-gradient(circle at 50% -20%, #1a1a1a, #050505); /* เพิ่มมิติพื้นหลัง */
     background-color: var(--bg-app);
     color: var(--text-main);
     font-family: 'Inter', sans-serif;
@@ -33,7 +36,9 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    background: #050505;
+    background: rgba(13, 13, 13, 0.8);
+    backdrop-filter: blur(10px); /* เอฟเฟกต์กระจกฝ้า */
+    border-bottom: 1px solid var(--border);
 }
 
 .logo {
@@ -44,6 +49,7 @@ body {
     align-items: center;
     gap: 10px;
 }
+
 
 .tag {
     background: var(--accent);
@@ -113,7 +119,7 @@ body {
 /* กรอบหน้าต่าง Terminal */
 .terminal-window {
     background-color: #1e1e1e; /* สีพื้นหลังแบบ VS Code */
-    border: 1px solid #333;
+    border: 1px solid var(--border);
     border-radius: 6px;
     display: flex;
     flex-direction: column;
@@ -125,11 +131,11 @@ body {
 
 /* ส่วนหัวของ Terminal (ที่มีปุ่มแดงเหลืองเขียว) */
 .terminal-header {
-    background-color: #252526;
+    background: #1a1a1a;
     padding: 8px 12px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border);
 }
 
 .traffic-lights {
@@ -163,6 +169,13 @@ body {
     flex: 1;
     overflow-y: auto;
     white-space: pre-wrap; /* ให้ขึ้นบรรทัดใหม่ตามจริง */
+    background: #0a0a0a;
+}
+
+.step.active .step-num {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 15px var(--accent-glow);
 }
 
 /* แต่งสี Output ให้ดูโปร */
@@ -177,7 +190,27 @@ body {
 .terminal-body::-webkit-scrollbar-track { background: #1e1e1e; }
 .terminal-body::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 
+.iteration-badge {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .panel-section {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -203,26 +236,35 @@ body {
     border-radius: 6px;
     resize: none;
     outline: none;
+    transition: all 0.3s;
 }
 
-.editor-container textarea:focus { border-color: var(--accent); }
+.editor-container textarea:focus { 
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-dim);
+}
 
 #code-input { height: 250px; color: #ff6b6b;}
 #error-input { height: 100px;  }
 
 #fix-btn {
-    background: var(--accent);
-    color: black;
+    background: linear-gradient(135deg, var(--accent), #00cc7e);    color: black;
+    box-shadow: 0 0 20px var(--accent-dim);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: none;
     padding: 12px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     width: 100%;
     margin-top: 10px;
+    color: #000;
 }
 
-#fix-btn:hover { filter: brightness(1.1); }
+#fix-btn:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px var(--accent-glow); 
+}
 #fix-btn:disabled { background: #333; color: #555; cursor: wait; }
 
 /* --- Main Stage (Center) --- */
@@ -309,15 +351,21 @@ pre { margin: 0; font-family: var(--font-mono); font-size: 13px; color: #a5d6ff;
 
 /* --- Analysis Summary Card --- */
 .summary-card {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-left: 4px solid var(--accent); /* แถบสีเขียวข้างซ้าย */
+    background: rgba(20, 20, 20, 0.5);    border: 1px solid #333;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
     border-radius: 6px;
     margin-bottom: 20px;
     padding: 0;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s;
 }
+
+.summary-card:hover {
+    background: rgba(26, 26, 26, 0.8);
+}
+
 
 .summary-header {
     background: #252526;
@@ -421,4 +469,152 @@ pre { margin: 0; font-family: var(--font-mono); font-size: 13px; color: #a5d6ff;
 
 @keyframes blinker {
     50% { opacity: 0; }
+}
+
+/* Comparison Section */
+.comparison-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.comp-box {
+    flex: 1;
+    background: #0f0f0f;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 150px; /* กำหนดความสูงให้เท่ากัน */
+}
+
+.error-box { border: 1px solid #552222; }
+.success-box { border: 1px solid #1a4422; }
+
+.comp-header {
+    font-size: 10px;
+    font-weight: bold;
+    padding: 5px 10px;
+    color: #fff;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.error-box .comp-header { background: #3a1111; color: #ff9999; }
+.success-box .comp-header { background: #0f2e16; color: #99ffbb; }
+
+.comp-box pre {
+    margin: 0;
+    padding: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    overflow: auto;
+    height: 100%;
+    white-space: pre-wrap; /* ให้ตัดคำถ้าล้น */
+}
+
+.error-box pre { color: #ffaaaa; }
+.success-box pre { color: #aaffcc; }
+
+.comp-arrow {
+    color: #444;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* file: styles.css */
+
+/* ... (โค้ดส่วนอื่นคงเดิม) ... */
+
+#fix-btn {
+    /* พื้นหลังแบบ Gradient เท่ๆ */
+    background: linear-gradient(135deg, var(--accent), #00cc7e);
+    color: #050505; /* สีตัวอักษรเข้มเพื่อให้ตัดกับพื้นหลัง */
+    
+    /* จัดกึ่งกลางด้วย Flexbox (สำคัญมาก) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
+    
+    /* ขนาดและขอบ */
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    
+    /* ตัวอักษร */
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    
+    /* Effect */
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 255, 157, 0.2);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+#fix-btn:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 255, 157, 0.4);
+    filter: brightness(1.1);
+}
+
+#fix-btn:active {
+    transform: translateY(0);
+}
+
+/* สถานะตอนกำลังทำงาน (Disabled) */
+#fix-btn:disabled {
+    background: #2a2a2a; /* เปลี่ยนเป็นสีเทาเข้ม */
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    border: 1px solid #444;
+}
+
+/* สร้าง Animation หมุนติ้วๆ (Spinner) */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid var(--accent); /* สีเขียวหมุนๆ */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+/* file: styles.css */
+
+/* ... (โค้ดเดิม) ... */
+
+/* สถานะกำลังทำงาน (Processing) */
+.badge.processing {
+    background: rgba(0, 210, 255, 0.1);
+    color: #00d2ff; /* สีฟ้า Neon */
+    border: 1px solid #00d2ff;
+    box-shadow: 0 0 5px rgba(0, 210, 255, 0.2);
+    animation: badge-pulse 1.5s infinite ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Animation ให้มันหายใจ (Pulse) */
+@keyframes badge-pulse {
+    0% { opacity: 1; box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
+    50% { opacity: 0.6; box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
+    100% { opacity: 1; box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); }
 }
